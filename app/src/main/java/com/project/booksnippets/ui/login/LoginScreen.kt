@@ -91,15 +91,4 @@ fun LoginScreen(onClickSeeAll: () -> Unit) {
     }
 }
 
-@Composable
-private fun LoginForm(onClickSeeAll: () -> Unit, onClickSeeItem: (String) -> Unit) {
-    Box {
-        Text(text = "Email")
-        Text(text = "Password")
-        Button(onClick = onClickSeeAll) {
-            Text(text = "LogIn")
-        }
-    }
-}
-
 private val DefaultPadding = 12.dp

@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,7 +51,8 @@ fun BookListItem(book: Book, onRowClick: (String) -> Unit) {
 @Composable
 private fun BookImage(book: Book) {
     Image(
-        painter = painterResource(id = book.bookImageId),
+        bitmap = book.bookImageId.asImageBitmap(),
+//        painter = painterResource(id = book.bookImageId),
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier = Modifier

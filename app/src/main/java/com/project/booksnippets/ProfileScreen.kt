@@ -1,5 +1,6 @@
 package com.project.booksnippets
 
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -16,6 +17,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -32,7 +34,7 @@ import com.project.booksnippets.ui.theme.Purple500
 import com.project.booksnippets.ui.theme.graySurface
 
 @Composable
-fun ProfileScreen(book: Book, onNavIconPressed: () -> Unit = { }) {
+fun ProfileScreen(book: Book, onAddClick: (String) -> Unit = {}) {
     val scrollState = rememberScrollState()
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -53,8 +55,10 @@ fun ProfileScreen(book: Book, onNavIconPressed: () -> Unit = { }) {
                 }
             }
             AdoptFab(
+                onAddClick = onAddClick,
                 extended = scrollState.value == 0,
-                modifier = Modifier.align(Alignment.BottomEnd)
+                modifier = Modifier.align(Alignment.BottomEnd),
+                book = book
             )
         }
     }
@@ -70,11 +74,11 @@ private fun ProfileHeader(
     val offsetDp = with(LocalDensity.current) { offset.toDp() }
 
     Image(
+        bitmap = book.bookImageId.asImageBitmap(),
         modifier = Modifier
             .heightIn(max = containerHeight / 2)
             .fillMaxWidth()
             .padding(top = offsetDp),
-        painter = painterResource(id = book.bookImageId),
         contentScale = ContentScale.Crop,
         contentDescription = null
     )
@@ -145,22 +149,22 @@ fun ProfileProperty(label: String, value: String) {
 }
 
 @Composable
-fun SnippetImage(image: Int, containerHeight: Dp) {
+fun SnippetImage(image: Bitmap, containerHeight: Dp) {
     Image(
+        bitmap = image.asImageBitmap(),
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(max = containerHeight / 3)
             .padding(top = 10.dp),
-        painter = painterResource(id = image),
         contentScale = ContentScale.Crop,
         contentDescription = null
     )
 }
 
 @Composable
-fun AdoptFab(extended: Boolean, modifier: Modifier = Modifier) {
+fun AdoptFab(onAddClick: (String) -> Unit, extended: Boolean, modifier: Modifier = Modifier, book: Book) {
     FloatingActionButton(
-        onClick = { /* TODO */ },
+        onClick = { onAddClick(book.title) },
         modifier = modifier
             .padding(16.dp)
             .padding()

@@ -11,15 +11,21 @@ import com.project.booksnippets.data.DataProvider
 
 enum class BookSnippetsScreen {
     Login,
+    Logout,
     BookHome,
-    BookSnippets;
+    BookAdd,
+    SnippetAdd,
+    Scanner;
 
     companion object {
         fun fromRoute(route: String?): BookSnippetsScreen =
             when (route?.substringBefore("/")) {
-                Login.name -> Login
                 BookHome.name -> BookHome
-                BookSnippets.name -> BookSnippets
+                BookAdd.name -> BookAdd
+                Scanner.name -> Scanner
+                Login.name -> Login
+                Logout.name -> Logout
+                SnippetAdd.name -> SnippetAdd
                 null -> Login
                 else -> throw IllegalArgumentException("Route $route is not recognized.")
             }
