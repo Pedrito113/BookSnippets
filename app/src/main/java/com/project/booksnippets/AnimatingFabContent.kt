@@ -129,5 +129,3 @@ private fun IconAndTextRow(
 private enum class ExpandableFabStates { Collapsed, Extended }
 
 private const val transitionDuration = 200
-
-//youtube tutorial: www.youtube.com/dsa...

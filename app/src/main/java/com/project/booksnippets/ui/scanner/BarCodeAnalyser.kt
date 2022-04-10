@@ -30,12 +30,13 @@ class BarCodeAnalyser(
                     .addOnSuccessListener { barcodes ->
                         if (barcodes.isNotEmpty()) {
                             onBarcodeDetected(barcodes)
+                            Log.d(SCANNER_TAG, "Bar code detected")
                         } else {
-                            Log.d("TAG", "analyze: No barcode Scanned")
+                            Log.d(SCANNER_TAG, "analyze: No barcode Scanned")
                         }
                     }
                     .addOnFailureListener { exception ->
-                        Log.d("TAG", "BarcodeAnalyser: Something went wrong $exception")
+                        Log.d(SCANNER_TAG, "BarcodeAnalyser: Something went wrong $exception")
                     }
                     .addOnCompleteListener {
                         image.close()
@@ -45,5 +46,9 @@ class BarCodeAnalyser(
         } else {
             image.close()
         }
+    }
+
+    companion object {
+        const val SCANNER_TAG = "SCANNER_TAG"
     }
 }

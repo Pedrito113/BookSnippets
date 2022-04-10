@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import java.io.Serializable
 
 data class BookSnippet(
-    val page: Int = 0,
-    val bookSnippetImageId: Bitmap
+    var page: String? = "",
+    var keyword: String? = "",
+    var uri: String? = "",
+    var bookSnippetImageId: Bitmap? = null,
 ) : Serializable

@@ -14,16 +14,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.project.booksnippets.data.Book
+import coil.compose.rememberAsyncImagePainter
+import com.project.booksnippets.data.BookModel
 import com.project.booksnippets.data.DataProvider
-import com.project.booksnippets.ui.theme.graySurface
+import com.project.booksnippets.ui.data.BookState
+import com.project.booksnippets.ui.data.UserState
 
 //fun BookListItem(book: Book, navigateToProfile: (Book) -> Unit) {
 @Composable
-fun BookListItem(book: Book, onRowClick: (String) -> Unit) {
+fun BookListItem(book: BookModel, onRowClick: (String) -> Unit) {
     Card(
         modifier = Modifier
             .padding(horizontal = 8.dp, vertical = 8.dp)
@@ -31,8 +32,14 @@ fun BookListItem(book: Book, onRowClick: (String) -> Unit) {
         elevation = 2.dp,
         shape = RoundedCornerShape(corner = CornerSize(16.dp)),
     ) {
+        val vm = BookState.current
+        val user = UserState.current.currentUser
 //        Row(Modifier.clickable { navigateToProfile(book) }) {
-        Row(Modifier.clickable { onRowClick(book.title) }) {
+        Row(Modifier.clickable { book.title?.let {
+            vm.getSnippets(book.uuid, user?.uuid)
+            onRowClick(it)
+        } }) {
+//            if (book.bookImageId != null)
             BookImage(book)
             Column(
                 modifier = Modifier
@@ -40,19 +47,18 @@ fun BookListItem(book: Book, onRowClick: (String) -> Unit) {
                     .fillMaxWidth()
                     .align(Alignment.CenterVertically)
             ) {
-                Text(text = book.title, style = typography.h6)
-                Text(text = book.author, style = typography.caption)
-                Text(text = book.status, style = typography.caption)
+                book.title?.let { Text(text = it, style = typography.h6) }
+                book.author?.let { Text(text = it, style = typography.caption) }
+                book.status?.let { Text(text = it, style = typography.caption) }
             }
         }
     }
 }
 
 @Composable
-private fun BookImage(book: Book) {
+private fun BookImage(book: BookModel) {
     Image(
-        bitmap = book.bookImageId.asImageBitmap(),
-//        painter = painterResource(id = book.bookImageId),
+        painter = rememberAsyncImagePainter(book.uri),
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier = Modifier
@@ -60,6 +66,17 @@ private fun BookImage(book: Book) {
             .size(84.dp)
             .clip(RoundedCornerShape(corner = CornerSize(16.dp)))
     )
+
+//    Image(
+//        bitmap = book.bookImageId!!.asImageBitmap(),
+//        painter = painterResource(id = book.bookImageId),
+//        contentDescription = null,
+//        contentScale = ContentScale.Crop,
+//        modifier = Modifier
+//            .padding(8.dp)
+//            .size(84.dp)
+//            .clip(RoundedCornerShape(corner = CornerSize(16.dp)))
+//    )
 }
 
 @Preview

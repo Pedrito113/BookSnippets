@@ -1,10 +1,8 @@
 package com.project.booksnippets.data
 
-import com.project.booksnippets.R
-
 
 object DataProvider {
-    val bookList = mutableListOf<Book>(
+    val bookList = mutableListOf<BookModel>(
 //        Book(
 //            id = 1,
 //            title = "Book1",
@@ -129,7 +127,7 @@ object DataProvider {
 //        ),
     )
 
-    fun getBook(title: String?): Book {
+    fun getBook(title: String?): BookModel {
         return bookList.first { it.title == title }
     }
 }

@@ -8,6 +8,7 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -25,22 +26,21 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import com.project.booksnippets.data.BookModel
-import com.project.booksnippets.data.BookSnippet
-import com.project.booksnippets.data.DataProvider
 import com.project.booksnippets.network.models.Book
 import com.project.booksnippets.ui.data.BookState
 import com.project.booksnippets.ui.data.UserState
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
-import java.util.*
 
+@RequiresApi(Build.VERSION_CODES.P)
 @Composable
-fun AddBook(onAddClick: () -> Unit = {}) {
+fun EditBook(book: BookModel?, onEditClick: () -> Unit = {}) {
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -48,19 +48,21 @@ fun AddBook(onAddClick: () -> Unit = {}) {
             .semantics { contentDescription = "Add Book" }
     ) {
         Spacer(Modifier.height(DefaultPadding))
-        AddBookScreen(onAddClick)
+        EditBookScreen(book, onEditClick)
         Spacer(Modifier.height(DefaultPadding))
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.P)
 @Composable
-fun AddBookScreen(onAddClick: () -> Unit = {}) {
+fun EditBookScreen(book: BookModel?, onEditClick: () -> Unit = {}) {
     lateinit var database: DatabaseReference
-    var title by remember { mutableStateOf("") }
-    var author by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var status by remember { mutableStateOf("") }
-    var bitmap = remember { mutableStateOf<Bitmap?>(null) }
+
+    var title by remember { mutableStateOf(book?.title.toString()) }
+    var author by remember { mutableStateOf(book?.author.toString()) }
+    var description by remember { mutableStateOf(book?.description.toString()) }
+    var status by remember { mutableStateOf(book?.status.toString()) }
+    var bitmap = remember { mutableStateOf<Bitmap?>(book?.bookImageId) }
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var downloadUri: String = ""
@@ -79,48 +81,46 @@ fun AddBookScreen(onAddClick: () -> Unit = {}) {
         if (vm.isAdding) {
             CircularProgressIndicator()
         } else {
-        Text("Add Book Screen", fontSize = 32.sp)
-        Spacer(modifier = Modifier.height(16.dp))
-        TextField(
-            value = title,
-            onValueChange = { title = it },
-            label = { Text("Enter title") },
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        TextField(
-            value = author,
-            onValueChange = { author = it },
-            label = { Text("Enter author") },
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        TextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("Description") },
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        TextField(
-            value = status,
-            onValueChange = { status = it },
-            label = { Text("Enter status") },
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+            Text("Edit Book Screen", fontSize = 32.sp)
+            Spacer(modifier = Modifier.height(16.dp))
+            TextField(
+                value = title,
+                onValueChange = { title = it },
+                label = { Text("Enter title") },
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            TextField(
+                value = author,
+                onValueChange = { author = it },
+                label = { Text("Enter author") },
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            TextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Description") },
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            TextField(
+                value = status,
+                onValueChange = { status = it },
+                label = { Text("Enter status") },
+            )
 
-        ImagePicker(bitmap)
-        Spacer(modifier = Modifier.height(16.dp))
-        Button( onClick = {
-            vm.isAdding = true
-            val uuid = UUID.randomUUID()
-            val uuidStr = uuid.toString()
+            Spacer(modifier = Modifier.height(16.dp))
+            EditImage(bitmap, book)
+            Spacer(modifier = Modifier.height(16.dp))
 
-            if (title.isEmpty() || author.isEmpty() || description.isEmpty()) {
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar(message = "Please fill all rows.")
-                }
-                vm.isAdding = false
-            } else {
-                if (bitmap.value != null) {
-                    val imageRef = storageRef.child("${user!!.uuid}/$uuidStr")
+            Button(onClick = {
+                vm.isAdding = true
+
+                if (title.isEmpty() || author.isEmpty() || description.isEmpty()) {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(message = "Please fill all rows.")
+                    }
+                    vm.isAdding = false
+                } else if (bitmap.value != null) {
+                    val imageRef = storageRef.child("${user!!.uuid}/${book!!.uuid}")
                     val baos = ByteArrayOutputStream()
                     val bitmapFirebase = bitmap.value!!
                     bitmapFirebase.compress(Bitmap.CompressFormat.JPEG, 25, baos)
@@ -155,7 +155,7 @@ fun AddBookScreen(onAddClick: () -> Unit = {}) {
                         Log.d("UPLOAD", "SUCCESS")
 
                         val book = Book(
-                            uuid = uuidStr,
+                            uuid = book?.uuid,
                             title = title,
                             author = author,
                             description = description,
@@ -165,50 +165,42 @@ fun AddBookScreen(onAddClick: () -> Unit = {}) {
                         )
 
                         database = Firebase.database.reference
-                        user?.uuid?.let { userId ->
-                            database.child("books").child(userId).child(uuidStr).setValue(book)
-                                .addOnSuccessListener {
-                                    Log.d("DB", "Book saved to database")
-                                    vm.isAdding = false
-                                }.addOnFailureListener {
-                                    coroutineScope.launch {
-                                        snackbarHostState.showSnackbar(message = "Unsuccessful upload of data to database.")
-                                    }
-                                    vm.isAdding = false
-                                }
+                        user!!.uuid?.let {
+                            database.child("books").child(it).child(book.uuid.toString()).child("title").setValue(book.title)
+                            database.child("books").child(it).child(book.uuid.toString()).child("author").setValue(book.author)
+                            database.child("books").child(it).child(book.uuid.toString()).child("description").setValue(book.description)
+                            database.child("books").child(it).child(book.uuid.toString()).child("status").setValue(book.status)
+                            database.child("books").child(it).child(book.uuid.toString()).child("uri").setValue(book.uri)
                         }
-                        onAddClick()
+                        vm.isAdding = false
+                        onEditClick()
+                        // taskSnapshot.metadata contains file metadata such as size, content-type, etc.
+                        // ...
                     }
                 } else {
                     val book = Book(
-                        uuid = uuidStr,
+                        uuid = book?.uuid,
                         title = title,
                         author = author,
                         description = description,
                         status = status,
-                        uri = "https://firebasestorage.googleapis.com/v0/b/book-snippets-bf203.appspot.com/o/example?alt=media&token=b6ecf3d5-74dd-4217-be96-485b04d2f48f",
+                        uri = downloadUri,
                         bookSnippets = null
                     )
-
                     database = Firebase.database.reference
-                    user?.uuid?.let { userId ->
-                        database.child("books").child(userId).child(uuidStr).setValue(book)
-                            .addOnSuccessListener {
-                                Log.d("DB", "Book saved to database")
-                                vm.isAdding = false
-                            }.addOnFailureListener {
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(message = "Unsuccessful upload of data to database.")
-                                }
-                                vm.isAdding = false
-                            }
+                    user!!.uuid?.let {
+                        database.child("books").child(it).child(book.uuid.toString()).child("title").setValue(book.title)
+                        database.child("books").child(it).child(book.uuid.toString()).child("author").setValue(book.author)
+                        database.child("books").child(it).child(book.uuid.toString()).child("description").setValue(book.description)
+                        database.child("books").child(it).child(book.uuid.toString()).child("status").setValue(book.status)
                     }
-                    onAddClick()
+                    vm.isAdding = false
+                    onEditClick()
                 }
+
+            }) {
+                Text(text = "Add")
             }
-        }) {
-            Text(text = "Add")
-        }
             Spacer(modifier = Modifier.height(32.dp))
             SnackbarHost(
                 hostState = snackbarHostState,
@@ -218,32 +210,15 @@ fun AddBookScreen(onAddClick: () -> Unit = {}) {
 }
 
 @Composable
-fun ImagePicker(bitmap: MutableState<Bitmap?>) {
+fun EditImage(bitmap: MutableState<Bitmap?>, book: BookModel?) {
     var imageUrl by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
-
+    bitmap.value = book?.bookImageId
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
         imageUrl = uri
     }
-
-
-//        Column(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(50.dp)
-//                .background(Purple500),
-//            horizontalAlignment = Alignment.CenterHorizontally,
-//            verticalArrangement = Arrangement.Center
-//        ) {
-//            Text(
-//                text = "Pick Gallery Image",
-//                color = Color.White,
-//                fontSize = 20.sp,
-//                fontWeight = FontWeight.Bold
-//            )
-//        }
 
     Column(
         modifier = Modifier
@@ -274,11 +249,19 @@ fun ImagePicker(bitmap: MutableState<Bitmap?>) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            imageUrl?.let {
+
+            if (imageUrl == null) {
+                Image(
+                    painter = rememberAsyncImagePainter(book?.uri),
+                    contentDescription = "Gallery Image",
+                    modifier = Modifier.size(200.dp)
+                )
+            } else {
                 if (Build.VERSION.SDK_INT < 28) {
-                    bitmap.value = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
+                    bitmap.value =
+                        MediaStore.Images.Media.getBitmap(context.contentResolver, imageUrl)
                 } else {
-                    val source = ImageDecoder.createSource(context.contentResolver, it)
+                    val source = ImageDecoder.createSource(context.contentResolver, imageUrl!!)
                     bitmap.value = ImageDecoder.decodeBitmap(source)
                 }
 
@@ -290,6 +273,7 @@ fun ImagePicker(bitmap: MutableState<Bitmap?>) {
                     )
                 }
             }
+
 
             Spacer(modifier = Modifier.padding(20.dp))
         }

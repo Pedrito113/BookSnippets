@@ -1,12 +1,15 @@
 package com.project.booksnippets
 
+import android.annotation.SuppressLint
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,33 +48,39 @@ import com.project.booksnippets.ui.scanner.ScannerScreen
 import com.project.booksnippets.ui.theme.BookSnippetsTheme
 import kotlinx.coroutines.launch
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.mlkit.vision.common.internal.MultiFlavorDetectorCreator
+import com.project.booksnippets.BookSnippetsScreen.Registration
 import com.project.booksnippets.BookSnippetsScreen.Login
 import com.project.booksnippets.BookSnippetsScreen.BookHome
 import com.project.booksnippets.BookSnippetsScreen.Logout
 import com.project.booksnippets.BookSnippetsScreen.Scanner
 import com.project.booksnippets.BookSnippetsScreen.BookAdd
+import com.project.booksnippets.BookSnippetsScreen.BookEdit
 import com.project.booksnippets.BookSnippetsScreen.SnippetAdd
-
-
-
-
+import com.project.booksnippets.ui.EditBook
+import com.project.booksnippets.ui.data.BookState
+import com.project.booksnippets.ui.data.BooksViewModel
+import com.project.booksnippets.ui.login.RegistrationBody
 
 
 class MainActivity : ComponentActivity() {
 //main home
-private val userState by viewModels<UserStateViewModel>()
+    private val userState by viewModels<UserStateViewModel>()
+    private val bookState by viewModels<BooksViewModel>()
 
+    @RequiresApi(Build.VERSION_CODES.M)
     @ExperimentalPermissionsApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            CompositionLocalProvider(UserState provides userState) {
+            CompositionLocalProvider(UserState provides userState, BookState provides bookState) {
                 ApplicationSwitcher()
             }
         }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.M)
 @ExperimentalPermissionsApi
 @Composable
 fun ApplicationSwitcher() {
@@ -83,6 +92,7 @@ fun ApplicationSwitcher() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.M)
 @ExperimentalPermissionsApi
 @Composable
 fun Start(startDestination: String) {
@@ -133,6 +143,7 @@ fun BottomNavigation(navController: NavController) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.M)
 @ExperimentalPermissionsApi
 @Composable
 fun BookSnippetsNavHost(navController: NavHostController, modifier: Modifier, startDestination: String) {
@@ -141,10 +152,16 @@ fun BookSnippetsNavHost(navController: NavHostController, modifier: Modifier, st
         startDestination = startDestination,
         modifier = modifier,
     ) {
+        composable(Registration.name) {
+            RegistrationBody(
+
+            )
+        }
+
+
         composable(Login.name) {
             LoginBody(
-//                onClickSeeAllAccounts = { navController.navigate(BookHome.name) },
-//                onAccountClick = { title -> navController.navigate("${Login.name}/$title") }
+                onClickRegister = { navController.navigate(Registration.name) }
             )
         }
 
@@ -161,12 +178,34 @@ fun BookSnippetsNavHost(navController: NavHostController, modifier: Modifier, st
         }
 
         composable(Scanner.name) {
-            ScannerScreen()
+            ScannerScreen(
+                onScanComplete = { navController.navigate(BookHome.name) }
+            )
         }
 
         composable(BookAdd.name) {
             AddBook(
                 onAddClick = { navController.navigate(BookHome.name) }
+            )
+        }
+
+        val editedBook = BookEdit.name
+        composable(
+            route = "$editedBook/{title}",
+            arguments = listOf(
+                navArgument("title") {
+                    type = NavType.StringType
+                }
+            )
+        ) { entry ->
+            val title = entry.arguments?.getString("title")
+            val vm = UserState.current
+            val book = vm.bookListTotal.find { book ->
+                book.title == title
+            }
+            EditBook(
+                book = book,
+                onEditClick = { navController.navigate(BookHome.name)}
             )
         }
 
@@ -179,14 +218,21 @@ fun BookSnippetsNavHost(navController: NavHostController, modifier: Modifier, st
                 }
             )
         ) { entry ->
+            val vm = UserState.current
             val title = entry.arguments?.getString("title")
-            val book = DataProvider.getBook(title)
-            Log.d("title", title.toString())
-            Log.d("book", title.toString())
+            val book = vm.bookListTotal.find { book ->
+                book.title == title
+            }
             ProfileScreen(
                 book = book,
-                onAddClick = { title ->
+                onAddClick = {
                     navController.navigate("${BookHome.name}/$title/addSnippet")
+                },
+                onEditBookClick = {
+                    navController.navigate("${BookEdit.name}/$title")
+                },
+                onRemoveBookClick = {
+                    navController.navigate("${BookHome.name}")
                 }
             )
         }
@@ -200,16 +246,20 @@ fun BookSnippetsNavHost(navController: NavHostController, modifier: Modifier, st
                 }
             )
         ) { entry ->
+            val vm = UserState.current
             val title = entry.arguments?.getString("title")
-            val book = DataProvider.getBook(title)
+            val book = vm.bookListTotal.find { book ->
+                book.title == title
+            }
             AddSnippet(
-                book = book,
+                book = book!!,
                 onAddClick = { navController.navigate(BookHome.name) }
             )
         }
     }
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun Logout() {
     val composableScope = rememberCoroutineScope()

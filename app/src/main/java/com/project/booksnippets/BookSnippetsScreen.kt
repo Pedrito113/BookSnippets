@@ -14,8 +14,10 @@ enum class BookSnippetsScreen {
     Logout,
     BookHome,
     BookAdd,
+    BookEdit,
     SnippetAdd,
-    Scanner;
+    Scanner,
+    Registration;
 
     companion object {
         fun fromRoute(route: String?): BookSnippetsScreen =
@@ -26,6 +28,8 @@ enum class BookSnippetsScreen {
                 Login.name -> Login
                 Logout.name -> Logout
                 SnippetAdd.name -> SnippetAdd
+                Registration.name -> Registration
+                BookEdit.name -> BookEdit
                 null -> Login
                 else -> throw IllegalArgumentException("Route $route is not recognized.")
             }
