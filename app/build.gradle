@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'com.google.firebase.appdistribution'
+
 }
 
 apply plugin: 'com.android.application'
@@ -85,8 +85,7 @@ dependencies {
 
     //Camera Permission
     implementation "com.google.accompanist:accompanist-permissions:0.19.0"
-
-    implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+    
 
     implementation platform('com.google.firebase:firebase-bom:29.2.1')
     implementation 'com.google.firebase:firebase-analytics-ktx'

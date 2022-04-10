@@ -4,10 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +43,7 @@ fun RegistrationScreen(onClickRegister: () -> Unit) {
     var password by remember { mutableStateOf("") }
     var password_again by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
     val vm = UserState.current
     Column(
         Modifier
@@ -82,15 +80,22 @@ fun RegistrationScreen(onClickRegister: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button( onClick = {
-                coroutineScope.launch {
-                    val uuid = UUID.randomUUID()
-                    val uuidStr = uuid.toString()
+                //  coroutineScope.launch {
+                if (password == password_again) {
+                    val uuidStr = UUID.nameUUIDFromBytes(email.toByteArray()).toString()
                     val newUser = User(uuid = uuidStr, email = email, password = password)
                     vm.registration(email, newUser)
+                } else {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(message = "Passwords are not the same..")
+                    }
                 }
             }) {
                 Text(text = "Register")
             }
+            SnackbarHost(
+                hostState = snackbarHostState,
+            )
         }
     }
 }

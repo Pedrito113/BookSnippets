@@ -2,10 +2,13 @@ package com.project.booksnippets.ui.data
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
+import com.google.android.material.snackbar.Snackbar
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.annotation.RequiresApi
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.runtime.*
@@ -17,9 +20,14 @@ import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 import com.project.booksnippets.data.BookModel
 import com.project.booksnippets.network.models.User
+import androidx.annotation.NonNull
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.DatabaseReference
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.google.firebase.database.DatabaseError
+import java.util.*
 
 
 class UserStateViewModel : ViewModel() {
@@ -59,8 +67,9 @@ class UserStateViewModel : ViewModel() {
     fun signIn(email: String, password: String, snackBar: SnackbarHostState?) {
         isBusy = true
 
+        val uuid = UUID.nameUUIDFromBytes(email.toByteArray()).toString()
         database = FirebaseDatabase.getInstance().getReference("users")
-        database.child(email).get().addOnSuccessListener {
+        database.child(uuid).get().addOnSuccessListener {
             if (it.child("password").value == password) {
                 currentUser = it.getValue<User>()
 
@@ -103,11 +112,11 @@ class UserStateViewModel : ViewModel() {
         Log.d("USER_LOADED", currentUser.toString())
     }
 
-    suspend fun registration(email: String, user: User) {
+   fun registration(email: String, user: User) {
         isBusy = true
 
         database = Firebase.database.reference
-        database.child("users").child(email).setValue(user)
+        database.child("users").child(user.uuid.toString()).setValue(user)
         currentUser = user
         signIn(email = email, user.password!!, null)
 
