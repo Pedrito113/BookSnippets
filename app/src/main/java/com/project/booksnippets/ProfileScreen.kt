@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,12 +47,12 @@ fun ProfileScreen(book: BookModel?, onAddClick: (String) -> Unit,
     onRemoveBookClick: () -> Unit) {
         val scrollState = rememberScrollState()
         val vm = BookState.current
-        if (vm.isAdding) {
+
+    Log.d("USER UUID", UserState.current.currentUser!!.uuid.toString())
+    Column(modifier = Modifier.fillMaxSize()) {
+    if (vm.isAdding) {
             CircularProgressIndicator()
         } else {
-            Log.d("USER UUID", UserState.current.currentUser!!.uuid.toString())
-
-    Column(modifier = Modifier.fillMaxSize()) {
         BoxWithConstraints(modifier = Modifier.weight(1f)) {
             Surface {
                 Column(
@@ -96,6 +97,8 @@ private fun ProfileHeader(
         book.title?.let { ProfileProperty(book = book, label = "Title", value = it) }
         book.author?.let { ProfileProperty(book = book, label= "Author", it) }
         book.description?.let { ProfileProperty(book = book, label = "Description", value = it) }
+        book.currentPage?.let { ProfileProperty(book = book, label = "Current Page", value = it) }
+        book.pagesCount?.let { ProfileProperty(book = book, label = "Pages", value = it) }
     }
 }
 
@@ -108,7 +111,7 @@ private fun ProfileContent(book: BookModel?, containerHeight: Dp, onEditBookClic
     val storageRef = storage.reference.child(user?.uuid.toString()).child(book?.uuid.toString())
     val subStorageRef = storage.reference.child(user?.uuid.toString()).child(book?.uuid.toString()+"/")
     var database: DatabaseReference = Firebase.database.reference
-
+    val coroutineScope = rememberCoroutineScope()
 
     Column {
         Spacer(modifier = Modifier.height(8.dp))
@@ -153,17 +156,23 @@ private fun ProfileContent(book: BookModel?, containerHeight: Dp, onEditBookClic
                             contentScale = ContentScale.Crop,
                             contentDescription = null,
                         )
-                        ProfileProperty(book = book, label = "Keyword", value = it?.keyword.toString())
                         Button(onClick = {
                             user?.uuid?.let { userId ->
                                 database.child("books").child(userId).child(book?.uuid.toString())
-                                    .child("booksnippets").child(it?.keyword.toString()).removeValue()
+                                    .child("booksnippets").child(it?.keyword.toString())
+                                    .removeValue()
                                 subStorageRef.child(it?.keyword.toString()).delete()
-                                onRemoveBookClick()
+                                snippets.remove(it)
                             }
-                        }) {
+                        }, Modifier.padding(top = 8.dp, bottom = 8.dp, start = 8.dp)) {
                             Text(text = "Remove Snippet")
                         }
+                        ProfileProperty(
+                            book = book,
+                            label = "Keyword",
+                            value = it?.keyword.toString()
+                        )
+                        ProfileProperty(book = book, label = "Page", value = it?.page.toString())
                     }
                 )
             }
@@ -232,8 +241,9 @@ fun SnippetImage(image: Bitmap, containerHeight: Dp) {
 @Composable
 fun AdoptFab(onAddClick: (String) -> Unit, extended: Boolean, modifier: Modifier = Modifier, book: BookModel?) {
     FloatingActionButton(
-        onClick = { if (book != null) {
-            onAddClick(book.title!!)
+        onClick = {
+            if (book != null) {
+                onAddClick(book.title!!)
            }
         },
         modifier = modifier

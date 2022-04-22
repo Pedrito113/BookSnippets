@@ -233,7 +233,7 @@ fun BookSnippetsNavHost(navController: NavHostController, modifier: Modifier, st
                     navController.navigate("${BookEdit.name}/$title")
                 },
                 onRemoveBookClick = {
-                    navController.navigate("${BookHome.name}")
+                    navController.navigate(BookHome.name)
                 }
             )
         }

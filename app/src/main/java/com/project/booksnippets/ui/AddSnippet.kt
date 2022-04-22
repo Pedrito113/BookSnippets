@@ -64,7 +64,7 @@ fun AddSnippetScreen(book: BookModel, onAddClick: () -> Unit = {}) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (vm.isAdding) {
+        if (vm.isAddingSnippet) {
             CircularProgressIndicator()
         } else {
         Text("Add Snippet Screen", fontSize = 32.sp)
@@ -93,10 +93,10 @@ fun AddSnippetScreen(book: BookModel, onAddClick: () -> Unit = {}) {
             val baos = ByteArrayOutputStream()
 
             if (keyword.isEmpty() || page.isEmpty()) {
+                vm.isAdding = false
                 coroutineScope.launch {
                     snackbarHostState.showSnackbar(message = "Please fill all rows.")
                 }
-                vm.isAdding = false
             } else if (bitmap.value != null) {
                 val bitmapFirebase = bitmap.value!!
                 bitmapFirebase.compress(Bitmap.CompressFormat.JPEG, 25, baos)
@@ -115,21 +115,21 @@ fun AddSnippetScreen(book: BookModel, onAddClick: () -> Unit = {}) {
                         downloadUri = task.result.toString()
                         Log.d("URL", downloadUri.toString())
                     } else {
-                        Log.d("URL", "FAIL URL")
                         vm.isAdding = false
+                        Log.d("URL", "FAIL URL")
                     }
                 }
 
                 uploadTask.addOnFailureListener {
                     // Handle unsuccessful uploads
                     coroutineScope.launch {
+                        vm.isAdding = false
                         snackbarHostState.showSnackbar(message = "Unsuccessful upload of image to storage.")
                     }
-                    vm.isAdding = false
                 }.addOnSuccessListener { taskSnapshot ->
                     Log.d("UPLOAD", "SUCCESS")
 
-                    val bookSnippet = com.project.booksnippets.network.models.BookSnippet(
+                    val bookSnippet = BookSnippet(
                         page = page,
                         keyword = keyword,
                         uri = downloadUri,
@@ -150,16 +150,17 @@ fun AddSnippetScreen(book: BookModel, onAddClick: () -> Unit = {}) {
                             }
                     }
                     vm.isAdding = false
-                    onAddClick()
                 }
+                onAddClick()
             } else {
-                val bookSnippet = com.project.booksnippets.network.models.BookSnippet(
+                val bookSnippet = BookSnippet(
                     page = page,
                     keyword = keyword,
                     uri = "https://firebasestorage.googleapis.com/v0/b/book-snippets-bf203.appspot.com/o/example?alt=media&token=b6ecf3d5-74dd-4217-be96-485b04d2f48f"
                 )
 
                 if (bookSnippet.page!!.isEmpty() || !bookSnippet.page!!.isDigitsOnly() || bookSnippet.keyword!!.isEmpty()) {
+                    vm.isAdding = false
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(message = "Please make sure all rows are filled and page row is only in digits.")
                     }
@@ -185,7 +186,11 @@ fun AddSnippetScreen(book: BookModel, onAddClick: () -> Unit = {}) {
         }) {
             Text(text = "Add")
         }
-            Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(32.dp))
+
+        SnackbarHost(
+                hostState = snackbarHostState,
+            )
         }
     }
 }

@@ -9,11 +9,8 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -61,6 +58,8 @@ fun EditBookScreen(book: BookModel?, onEditClick: () -> Unit = {}) {
     var title by remember { mutableStateOf(book?.title.toString()) }
     var author by remember { mutableStateOf(book?.author.toString()) }
     var description by remember { mutableStateOf(book?.description.toString()) }
+    var currentPage by remember { mutableStateOf(book?.currentPage.toString()) }
+    var pages by remember { mutableStateOf(book?.pagesCount.toString()) }
     var status by remember { mutableStateOf(book?.status.toString()) }
     var bitmap = remember { mutableStateOf<Bitmap?>(book?.bookImageId) }
     val coroutineScope = rememberCoroutineScope()
@@ -70,6 +69,18 @@ fun EditBookScreen(book: BookModel?, onEditClick: () -> Unit = {}) {
     var storageRef = storage.reference
     val user = UserState.current.currentUser
     val vm = BookState.current
+    val statusList = listOf(
+        "Not Read",
+        "Already Read",
+    )
+
+    val isOpen = remember { mutableStateOf(false) } // initial value
+    val openCloseOfDropDownList: (Boolean) -> Unit = {
+        isOpen.value = it
+    }
+    val userSelectedString: (String) -> Unit = {
+        status = it
+    }
 
     Column(
         Modifier
@@ -102,12 +113,47 @@ fun EditBookScreen(book: BookModel?, onEditClick: () -> Unit = {}) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             TextField(
-                value = status,
-                onValueChange = { status = it },
-                label = { Text("Enter status") },
+                value = currentPage,
+                onValueChange = { currentPage = it },
+                label = { Text("Current Page") },
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            TextField(
+                value = pages,
+                onValueChange = { pages = it },
+                label = { Text("Pages Count") },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            Box {
+                Column {
+                    OutlinedTextField(
+                        value = status,
+                        onValueChange = { status = it },
+                        label = { Text(text = "Status") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    DropDownList(
+                        requestToOpen = isOpen.value,
+                        list = statusList,
+                        openCloseOfDropDownList,
+                        userSelectedString
+                    )
+                }
+                Spacer(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(Color.Transparent)
+                        .padding(10.dp)
+                        .clickable(
+                            onClick = { isOpen.value = true }
+                        )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             EditImage(bitmap, book)
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -160,6 +206,8 @@ fun EditBookScreen(book: BookModel?, onEditClick: () -> Unit = {}) {
                             author = author,
                             description = description,
                             status = status,
+                            currentPage = currentPage,
+                            pagesCount = pages,
                             uri = downloadUri,
                             bookSnippets = null
                         )
@@ -169,6 +217,8 @@ fun EditBookScreen(book: BookModel?, onEditClick: () -> Unit = {}) {
                             database.child("books").child(it).child(book.uuid.toString()).child("title").setValue(book.title)
                             database.child("books").child(it).child(book.uuid.toString()).child("author").setValue(book.author)
                             database.child("books").child(it).child(book.uuid.toString()).child("description").setValue(book.description)
+                            database.child("books").child(it).child(book.uuid.toString()).child("currentPage").setValue(book.currentPage)
+                            database.child("books").child(it).child(book.uuid.toString()).child("pagesCount").setValue(book.pagesCount)
                             database.child("books").child(it).child(book.uuid.toString()).child("status").setValue(book.status)
                             database.child("books").child(it).child(book.uuid.toString()).child("uri").setValue(book.uri)
                         }
@@ -184,6 +234,8 @@ fun EditBookScreen(book: BookModel?, onEditClick: () -> Unit = {}) {
                         author = author,
                         description = description,
                         status = status,
+                        currentPage = currentPage,
+                        pagesCount = pages,
                         uri = downloadUri,
                         bookSnippets = null
                     )
@@ -192,6 +244,8 @@ fun EditBookScreen(book: BookModel?, onEditClick: () -> Unit = {}) {
                         database.child("books").child(it).child(book.uuid.toString()).child("title").setValue(book.title)
                         database.child("books").child(it).child(book.uuid.toString()).child("author").setValue(book.author)
                         database.child("books").child(it).child(book.uuid.toString()).child("description").setValue(book.description)
+                        database.child("books").child(it).child(book.uuid.toString()).child("currentPage").setValue(book.currentPage)
+                        database.child("books").child(it).child(book.uuid.toString()).child("pagesCount").setValue(book.pagesCount)
                         database.child("books").child(it).child(book.uuid.toString()).child("status").setValue(book.status)
                     }
                     vm.isAdding = false

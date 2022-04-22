@@ -23,6 +23,7 @@ class BooksViewModel : ViewModel() {
     var snippetsTotal = mutableStateListOf<BookSnippet?>()
 
     var isAdding by mutableStateOf(false)
+    var isAddingSnippet by mutableStateOf(false)
 
     fun getSnippets(bookUuid: String?, uuid: String?) {
         isAdding = true
@@ -39,9 +40,9 @@ class BooksViewModel : ViewModel() {
                             var imageRef = storageRef.child(uuid).child(bookUuid).child(bookSnippet.keyword!!)
                             val ONE_MEGABYTE: Long = 1024 * 1024
                             imageRef.getBytes(ONE_MEGABYTE).addOnSuccessListener {
-                                bookSnippet.bookSnippetImageId = mutableStateOf<Bitmap?>(
-                                    BitmapFactory.decodeByteArray(it, 0, it.size)).value
-                                snippetsTotal[0] = snippetsTotal[0]
+                                bookSnippet.bookSnippetImageId = mutableStateOf<Bitmap?>(BitmapFactory.decodeByteArray(it,  0, it.size)).value
+                                    if (snippetsTotal[0] != null)
+                                  snippetsTotal[0] = snippetsTotal[0]
                             }.addOnFailureListener {
                                 // Handle any errors
                                 Log.d("ERROR", "ERROR")

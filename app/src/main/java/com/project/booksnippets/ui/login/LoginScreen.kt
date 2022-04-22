@@ -93,8 +93,15 @@ fun LoginScreen(onClickSeeAll: () -> Unit, onClickRegister: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
             Button( onClick = {
                 if (vm.isOnline(context)) {
+                    if (email == "" || password == "") {
                     coroutineScope.launch {
-                        vm.signIn(email, password, snackbarHostState)
+                        snackbarHostState.showSnackbar(message = "Please fill the username and password.")
+                    }
+                    } else {
+                        coroutineScope.launch {
+
+                            vm.signIn(email, password, snackbarHostState)
+                        }
                     }
                 } else {
                     coroutineScope.launch {

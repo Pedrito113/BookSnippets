@@ -9,6 +9,8 @@ data class BookModel(
     var author: String? = "",
     var description: String? = "",
     var status: String? = "",
+    val currentPage: String? = "",
+    val pagesCount: String? = "",
     var uri: String? = "",
     var bookImageId: Bitmap? = null,
     val bookSnippets: MutableList<BookSnippet>? = null
