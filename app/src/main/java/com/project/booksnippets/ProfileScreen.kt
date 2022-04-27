@@ -119,7 +119,16 @@ private fun ProfileContent(book: BookModel?, containerHeight: Dp, onEditBookClic
         if (book != null) {
             Name(book)
         }
-            Button(onClick = { onEditBookClick(book?.title.toString()) }, Modifier.padding(top = 16.dp, start = 16.dp)) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            Button(
+                onClick = { onEditBookClick(book?.title.toString()) },
+                Modifier.padding(top = 16.dp, start = 16.dp)
+            ) {
                 Text(text = "Edit")
             }
 
@@ -138,6 +147,7 @@ private fun ProfileContent(book: BookModel?, containerHeight: Dp, onEditBookClic
             }, Modifier.padding(top = 16.dp, start = 16.dp)) {
                 Text(text = "Remove")
             }
+        }
 
             val snippets: SnapshotStateList<BookSnippet?> = vm.snippetsTotal
             LazyColumn(

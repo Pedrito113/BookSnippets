@@ -113,10 +113,8 @@ fun AddSnippetScreen(book: BookModel, onAddClick: () -> Unit = {}) {
                 }.addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         downloadUri = task.result.toString()
-                        Log.d("URL", downloadUri.toString())
                     } else {
                         vm.isAdding = false
-                        Log.d("URL", "FAIL URL")
                     }
                 }
 
@@ -127,7 +125,6 @@ fun AddSnippetScreen(book: BookModel, onAddClick: () -> Unit = {}) {
                         snackbarHostState.showSnackbar(message = "Unsuccessful upload of image to storage.")
                     }
                 }.addOnSuccessListener { taskSnapshot ->
-                    Log.d("UPLOAD", "SUCCESS")
 
                     val bookSnippet = BookSnippet(
                         page = page,
@@ -141,7 +138,6 @@ fun AddSnippetScreen(book: BookModel, onAddClick: () -> Unit = {}) {
                             .child(book.uuid.toString())
                             .child("booksnippets").child(keyword).setValue(bookSnippet)
                             .addOnSuccessListener {
-                                Log.d("BOOK_ASS", "SAVED")
                             }.addOnFailureListener {
                                 coroutineScope.launch {
                                     snackbarHostState.showSnackbar(message = "Unsuccessful upload of data to database.")
@@ -171,7 +167,6 @@ fun AddSnippetScreen(book: BookModel, onAddClick: () -> Unit = {}) {
                             .child(book.uuid.toString())
                             .child("booksnippets").child(keyword).setValue(bookSnippet)
                             .addOnSuccessListener {
-                                Log.d("BOOK_ASS", "SAVED")
                             }.addOnFailureListener {
                                 coroutineScope.launch {
                                     snackbarHostState.showSnackbar(message = "Unsuccessful upload of data to database.")

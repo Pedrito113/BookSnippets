@@ -29,6 +29,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.KeyboardType.Companion.Email
 import androidx.compose.ui.text.input.KeyboardType.Companion.Password
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -121,6 +122,11 @@ fun LoginScreen(onClickSeeAll: () -> Unit, onClickRegister: () -> Unit) {
             )
             SnackbarHost(
                 hostState = snackbarHostState,
+            )
+            Spacer(Modifier.height(299.dp))
+            Text(
+                text = "Created © 2022 by Petr Schlosser",
+                textAlign = TextAlign.Center
             )
         }
     }

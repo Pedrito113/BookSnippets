@@ -105,7 +105,7 @@ fun Start(startDestination: String) {
             backstackEntry.value?.destination?.route
         )
 
-        Scaffold(bottomBar = { if (currentScreen != Login) BottomNavigation(navController = navController) }) { innerPadding ->
+        Scaffold(bottomBar = { if ((currentScreen != Login) && (currentScreen != Registration))BottomNavigation(navController = navController) }) { innerPadding ->
             BookSnippetsNavHost(
                 navController = navController,
                 modifier = Modifier.padding(innerPadding),

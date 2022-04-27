@@ -112,7 +112,6 @@ fun AddBookScreen(onAddClick: () -> Unit = {}) {
     val userSelectedString: (String) -> Unit = {
         status = it
     }
-
     Column(
         Modifier
             .fillMaxSize()
@@ -215,22 +214,22 @@ fun AddBookScreen(onAddClick: () -> Unit = {}) {
                     }.addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             downloadUri = task.result.toString()
-                            Log.d("URL", downloadUri.toString())
+
                         } else {
-                            Log.d("URL", "FAIL URL")
+
                             vm.isAdding = false
                         }
                     }
 
                     uploadTask.addOnFailureListener {
                         // Handle unsuccessful uploads
-                        Log.d("UPLOAD", "UNSUCCESSFUL")
+
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar(message = "Unsuccessful upload of image to storage.")
                         }
                         vm.isAdding = false
                     }.addOnSuccessListener { taskSnapshot ->
-                        Log.d("UPLOAD", "SUCCESS")
+
 
                         val book = Book(
                             uuid = uuidStr,
@@ -248,7 +247,6 @@ fun AddBookScreen(onAddClick: () -> Unit = {}) {
                         user?.uuid?.let { userId ->
                             database.child("books").child(userId).child(uuidStr).setValue(book)
                                 .addOnSuccessListener {
-                                    Log.d("DB", "Book saved to database")
                                     vm.isAdding = false
                                 }.addOnFailureListener {
                                     coroutineScope.launch {
@@ -276,7 +274,6 @@ fun AddBookScreen(onAddClick: () -> Unit = {}) {
                     user?.uuid?.let { userId ->
                         database.child("books").child(userId).child(uuidStr).setValue(book)
                             .addOnSuccessListener {
-                                Log.d("DB", "Book saved to database")
                                 vm.isAdding = false
                             }.addOnFailureListener {
                                 coroutineScope.launch {
