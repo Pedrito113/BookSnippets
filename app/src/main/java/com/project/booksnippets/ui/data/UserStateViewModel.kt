@@ -34,8 +34,6 @@ class UserStateViewModel : ViewModel() {
     private lateinit var database: DatabaseReference
     var currentUser: User? = null
     var bookListTotal = mutableStateListOf<BookModel>()
-    //    val storage = Firebase.storage
-//    var storageRef = storage.reference
     var bitmap = mutableStateOf<Bitmap?>(null)
 
     var isLoggedIn by mutableStateOf(false)
@@ -50,13 +48,10 @@ class UserStateViewModel : ViewModel() {
                 connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
             if (capabilities != null) {
                 if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_CELLULAR")
                     return true
                 } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_WIFI")
                     return true
                 } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_ETHERNET")
                     return true
                 }
             }
@@ -81,7 +76,6 @@ class UserStateViewModel : ViewModel() {
                         for (ds in dataSnapshot.children) {
                             var book: BookModel? = ds.getValue<BookModel>()
                             if (book != null) {
-                                Log.d("next BOOK", book.toString())
                                 bookList.add(book)
                             }
                         }
@@ -92,21 +86,18 @@ class UserStateViewModel : ViewModel() {
                     }
 
                     override fun onCancelled(databaseError: DatabaseError) {
-                        Log.d("CANCELED", databaseError.message)
                         isBusy = false
                         isLoggedIn = true
                     }
                 }
                 booksRef!!.addValueEventListener(valueEventListener)
             } else {
-                Log.d("wrong_pass", "Wrong password")
                 viewModelScope.launch {
                     snackBar?.showSnackbar(message = "Credentials are not correct.")
                 }
                 isBusy = false
             }
         }.addOnFailureListener{
-            Log.d("firebase", "Error getting data", it)
         }
 
         Log.d("USER_LOADED", currentUser.toString())

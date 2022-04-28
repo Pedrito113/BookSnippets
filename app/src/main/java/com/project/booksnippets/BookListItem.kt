@@ -21,6 +21,7 @@ import com.project.booksnippets.data.BookModel
 import com.project.booksnippets.data.DataProvider
 import com.project.booksnippets.ui.data.BookState
 import com.project.booksnippets.ui.data.UserState
+import com.project.booksnippets.ui.theme.Purple200
 
 //fun BookListItem(book: Book, navigateToProfile: (Book) -> Unit) {
 @Composable
@@ -49,7 +50,7 @@ fun BookListItem(book: BookModel, onRowClick: (String) -> Unit) {
             ) {
                 book.title?.let { Text(text = it, style = typography.h6) }
                 book.author?.let { Text(text = it, style = typography.caption) }
-                book.status?.let { Text(text = it, style = typography.caption) }
+                book.status?.let { Text(text = it, style = typography.caption, color = Purple200) }
             }
         }
     }
@@ -67,16 +68,6 @@ private fun BookImage(book: BookModel) {
             .clip(RoundedCornerShape(corner = CornerSize(16.dp)))
     )
 
-//    Image(
-//        bitmap = book.bookImageId!!.asImageBitmap(),
-//        painter = painterResource(id = book.bookImageId),
-//        contentDescription = null,
-//        contentScale = ContentScale.Crop,
-//        modifier = Modifier
-//            .padding(8.dp)
-//            .size(84.dp)
-//            .clip(RoundedCornerShape(corner = CornerSize(16.dp)))
-//    )
 }
 
 @Preview

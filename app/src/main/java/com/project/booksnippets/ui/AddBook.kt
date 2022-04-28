@@ -307,23 +307,6 @@ fun ImagePicker(bitmap: MutableState<Bitmap?>) {
         imageUrl = uri
     }
 
-
-//        Column(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(50.dp)
-//                .background(Purple500),
-//            horizontalAlignment = Alignment.CenterHorizontally,
-//            verticalArrangement = Arrangement.Center
-//        ) {
-//            Text(
-//                text = "Pick Gallery Image",
-//                color = Color.White,
-//                fontSize = 20.sp,
-//                fontWeight = FontWeight.Bold
-//            )
-//        }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
