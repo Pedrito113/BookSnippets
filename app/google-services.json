@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "409299494672",
+    "firebase_url": "https://book-snippets-bf203-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "book-snippets-bf203",
+    "storage_bucket": "book-snippets-bf203.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:409299494672:android:4a9f6b8c2ca9f75a726795",
+        "android_client_info": {
+          "package_name": "com.project.booksnippets"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "409299494672-7c855umja6laoaath16kqhmdqpdedf4d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMl9YJCWXL_Xf43fyP3Y1ZyOQL5EpVXI8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "409299494672-7c855umja6laoaath16kqhmdqpdedf4d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
